@@ -1,0 +1,5 @@
+﻿  main.cpp
+T:\ccccccccccccccccc\consolequest\main.cpp(37,13): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  consolequest.vcxproj -> T:\ccccccccccccccccc\consolequest\x64\Debug\consolequest.exe
+  Der Befehl "pwsh.exe" ist entweder falsch geschrieben oder
+  konnte nicht gefunden werden.
