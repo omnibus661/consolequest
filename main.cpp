@@ -1,16 +1,18 @@
 #include <iostream>
-#include "GameManager.h"
 #include <filesystem>
 #include <vector>
+#include "GameManager.h"
+#include "Menu.h"
+using namespace ConsoleQuest;
 
 namespace fs = std::filesystem;
 using Path = fs::path;
 
 int main()
 {
-	MainGame::GameManager manager;
-
-	std::cout << " --=== ConsoleQuest ===-- " << '\n' << '\n';
+	GameManager manager;
+	Menu menu("ConsoleQuest");
+	menu.Add("New Game", 0);
 
 	//alle .save dateien laden
 	std::vector<Path> files;
@@ -22,46 +24,22 @@ int main()
 		}
 	}
 
-	std::cout << "New Game: 0" << std::endl << std::endl;
-
 	if (!files.empty())
 	{
 		for (int i = 0; i < files.size(); i++)
 		{
 			std::filesystem::path name = files[i].stem();
-			std::cout << "Load Game '" + name.string() + "': " + std::to_string(i + 1) << std::endl;
+			menu.Add("Load Game " + name.string(), i + 1);
 		}
 	}
-	std::cout << std::endl;
+
+	menu.AddBlank();
 
 	int maxSel = files.size() + 1;
-	std::cout << "Delete Game: " << maxSel << std::endl;
-	std::cout << "Exit: " << maxSel + 1 << std::endl << std::endl;
+	menu.Add("Delete Game", maxSel);
+	menu.Add("Exit", maxSel + 1);
 
-	int selection;
-
-	while (true)
-	{
-		std::cout << "Selection: (0-" << maxSel + 1 << "): ";
-
-		if (std::cin >> selection)
-		{
-			if (selection >= 0 && selection < (maxSel + 1))
-			{
-				break;
-			}
-			std::cout << "Invalid Selection. Try Again" << std::endl << std::endl;
-		}
-
-		//hier falsch
-		else
-		{
-			std::cout << "Invalid Selection. Try Again" << std::endl << std::endl;
-			selection = -1;
-			std::cin.clear();
-			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-		}
-	}
+	int selection = menu.Show();
 
 	//new game
 	if (selection == 0)
@@ -77,6 +55,6 @@ int main()
 
 	if (!game)
 	{
-		MainGame::ActiveGame newGame = manager.New("game");
+		ActiveGame newGame = manager.New("game");
 	}
 }

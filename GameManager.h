@@ -3,15 +3,15 @@
 #include <optional>
 #include <string>
 
-namespace MainGame
+namespace ConsoleQuest
 {
 	class ActiveGame;
 }
 
-using NActiveGame = std::optional<MainGame::ActiveGame>;
+using NActiveGame = std::optional<ConsoleQuest::ActiveGame>;
 using String = std::string;
 
-namespace MainGame
+namespace ConsoleQuest
 {
 	class ActiveGame
 	{

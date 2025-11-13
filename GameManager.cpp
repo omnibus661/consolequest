@@ -1,5 +1,4 @@
 #include "GameManager.h"
-#include <nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>
 #include <chrono>
@@ -9,7 +8,7 @@ namespace fs = std::filesystem;
 using namespace std::chrono;
 using Path = fs::path;
 
-namespace MainGame
+namespace ConsoleQuest
 {
 	NActiveGame GameManager::Load(const String& gameName)
 	{
