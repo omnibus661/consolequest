@@ -3,6 +3,8 @@
 #include <vector>
 #include "GameManager.h"
 #include "Menu.h"
+#include "MenuBuilder.h"
+
 using namespace ConsoleQuest;
 
 namespace fs = std::filesystem;
@@ -11,50 +13,50 @@ using Path = fs::path;
 int main()
 {
 	GameManager manager;
-	Menu menu("ConsoleQuest");
-	menu.Add("New Game", 0);
+	NActiveGame game;
 
-	//alle .save dateien laden
-	std::vector<Path> files;
-	for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(fs::current_path()))
+	while (!game)
 	{
-		if (entry.is_regular_file() && entry.path().extension() == ".save")
+		MenuItem selection = MenuBuilder::MakeMainMenu().Show();
+
+		if (selection.tag == MenuTag::Exit)
 		{
-			files.push_back(entry.path());
+			break;
 		}
-	}
 
-	if (!files.empty())
-	{
-		for (int i = 0; i < files.size(); i++)
+		//delete
+		if (selection.tag == MenuTag::DeleteGame)
 		{
-			std::filesystem::path name = files[i].stem();
-			menu.Add("Load Game " + name.string(), i + 1);
+			MenuItem toDelete = MenuBuilder::MakeDeleteMenu().Show();
+
+			if (toDelete.tag == MenuTag::SelectedGame &&
+				MenuBuilder::Continue("Really delete '" + toDelete.data + "' ?")) {
+				manager.Delete(toDelete.data);
+			}
 		}
+
+		//new game
+		if (selection.tag == MenuTag::NewGame)
+		{
+			Menu::ClearConsole();
+			std::cout << "Enter Name for new Savegame: ";
+			String newFileName;
+
+			std::cin >> newFileName;
+			manager.New(newFileName);
+		}
+
+		if(selection.tag == MenuTag::SelectedGame)
+		{
+
+		}
+
 	}
 
-	menu.AddBlank();
-
-	int maxSel = files.size() + 1;
-	menu.Add("Delete Game", maxSel);
-	menu.Add("Exit", maxSel + 1);
-
-	int selection = menu.Show();
-
-	//new game
-	if (selection == 0)
+	if (game == std::nullopt)
 	{
-		std::cout << "Enter Name for new Savegame: ";
-		String newFileName;
-
-		std::cin >> newFileName;
-		//hier neustarten??
-	}
-
-	NActiveGame game = manager.Load("game");
-
-	if (!game)
-	{
-		ActiveGame newGame = manager.New("game");
+		std::cout << "Goodbye";
+		return 0;
 	}
 }
+

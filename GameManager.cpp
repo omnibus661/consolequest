@@ -31,6 +31,18 @@ namespace ConsoleQuest
 		}
 	}
 
+	bool GameManager::Delete(const String& gameName)
+	{
+		const Path deletePath = gameName + ".save";
+		if (fs::exists(deletePath) && fs::remove(deletePath))
+		{
+			return true;
+		}
+		
+		return false;
+	}
+
+
 	bool GameManager::CreateSaveFile(const String& fileName)
 	{
 		const Path newFilePath = fileName + ".save";

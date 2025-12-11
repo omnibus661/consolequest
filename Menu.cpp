@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
+#include "Globals.cpp"
 
 #if defined(_WIN32)
 #define CLEAR "cls"
@@ -11,84 +12,137 @@
 
 namespace ConsoleQuest 
 {
-	void Clear() {
+	static void Clear() {
 		std::system(CLEAR);
 	}
 
-	void Menu::Add(const std::string& _data, const int _value)
+	void Menu::Add(const std::string& _data, MenuTag _tag)
 	{
-		items.push_back(MenuItem(_data, _value));
+		items.push_back(MenuItem(_data, _tag));
 	}
+
+	void Menu::Add(const std::string& _data)
+	{
+		Add(_data, MenuTag::None);
+	}
+
+
+	void Menu::AllowCancel()
+	{
+		anyOtherIsCancel = true;
+	}
+
 	void Menu::AddBlank()
 	{
-		Menu::Add(std::string{}, -1);
+		Add(std::string{}, MenuTag::Blank);
 	}
-	int Menu::Show()
+
+
+	MenuItem Menu::Show()
 	{
 		std::vector<MenuItem> valid;
 		valid.reserve(items.size());
 
-		std::copy_if(items.begin(), items.end(), std::back_inserter(valid), 
-			[](const MenuItem& item) 
+		std::copy_if(items.begin(), items.end(), std::back_inserter(valid), [](const MenuItem& item) 
 			{
-				return item.value != -1;
+				return item.tag != MenuTag::Blank && item.tag != MenuTag::Invalid;
 			});
 
-		auto lowest = std::min_element(valid.begin(), valid.end(),
-			[](const MenuItem& a, const MenuItem& b) 
-			{
-				return a.value < b.value;
-			});
-
-		auto highest = std::max_element(valid.begin(), valid.end(),
-			[](const MenuItem& a, const MenuItem& b) 
-			{
-				return a.value < b.value;
-			});
-
-		int min = lowest->value;
-		int max = highest->value;
+		int min = 0;
+		size_t max = valid.size() -1;
 
 		while (true) {
 			Clear();
 
-			std::cout << title;
-			int selection;
+			int selectedIndex = 0;
+			std::cout << title << std::endl << std::endl;
 			for (auto& item : items)
 			{
-				if (item.value != -1)
+				if (item.tag != MenuTag::Blank)
 				{
-					std::cout << item.value << " " << item.data << std::endl;
+					std::cout << selectedIndex << " " << item.data << std::endl;
+					selectedIndex++;
 				}
 				else {
 					std::cout << "" << std::endl;
 				}
 				
 			}
-			std::cout << "Selection (" << min << "-" << max << "): ";
 			
-			if (std::cin >> selection)
+			//implicit cancel
+			if (anyOtherIsCancel)
 			{
-				if (selection >= min && selection <= max)
-				{
-					return selection;
+				std::cout << "Selection (" << min << "-" << max << ")";
 
+				std::cout << std::endl << "(press any other key to return): ";
+				std::string input;
+
+				std::cin >> input;
+
+				int inputNum = 0;
+				if (IsNumeric(input, inputNum))
+				{
+					if (inputNum >= min && inputNum <= max)
+					{
+						MenuItem item = GetItem(inputNum);
+						return item;
+					}
+
+					return MenuItem("Cancel", MenuTag::Exit);
 				}
 				else {
+					return MenuItem("Cancel", MenuTag::Exit);
+				}	
+			}
+
+			//regular, no implicit cancel
+			else {
+
+				std::cout << "Selection (" << min << "-" << max << "): ";
+
+				int selection;
+				if (std::cin >> selection)
+				{
+					if (selection >= min && selection <= max)
+					{
+						MenuItem item = GetItem(selection);
+						return item;
+					}
+					else {
+						std::cout << "Invalid Selection." << std::endl << std::endl;
+					}
+				}
+				else
+				{
 					std::cout << "Invalid Selection." << std::endl << std::endl;
+					selection = -1;
+					std::cin.clear();
+					std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 				}
 			}
-			else 
-			{
-				std::cout << "Invalid Selection." << std::endl << std::endl;
-				selection = -1;
-				std::cin.clear();
-				std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-			}
-		
 		}
 	}
 
+	MenuItem Menu::GetItem(const int value)
 
+	{
+		std::vector<MenuItem> valid;
+		std::copy_if(items.begin(), items.end(), std::back_inserter(valid), [](const MenuItem& item)
+			{
+				return item.tag != MenuTag::Blank && item.tag != MenuTag::Invalid;
+			});
+
+
+		if (value > valid.size())
+		{
+			return MenuItem("Not Found", MenuTag::Invalid);
+		}
+
+		return valid[value];
+	}
+
+	void Menu::ClearConsole()
+	{
+		std::system(CLEAR);
+	}
 }
-

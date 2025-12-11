@@ -22,6 +22,7 @@ namespace ConsoleQuest
 	public:
 		NActiveGame Load(const String& gameName);
 		ActiveGame New(const String& gameName);
+		bool Delete(const String& gameName);
 	private:
 		static bool CreateSaveFile(const String& fileName);
 	};
